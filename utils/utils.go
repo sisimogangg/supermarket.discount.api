@@ -15,3 +15,14 @@ func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
+
+// Contains returns true if element exist in the array
+func Contains(elem int32, elements []int32) bool {
+	for _, e := range elements {
+		if e == elem {
+			return true
+		}
+	}
+
+	return false
+}

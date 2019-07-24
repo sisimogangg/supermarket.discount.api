@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/sisimogangg/supermarket.discount.api/discount"
-	"github.com/sisimogangg/supermarket.discount.api/models"
 )
 
 type discountService struct {
@@ -18,11 +17,20 @@ func NewDicountService(repo discount.DataAccessLayer, timeout time.Duration) dis
 	return &discountService{dal: repo, timeOut: timeout}
 }
 
-func (s *discountService) GetDiscountByProductID(ctx context.Context, productID int32) (*models.Discounter, error) {
+func (s *discountService) GetDiscountByProductID(ctx context.Context, productID int32) (*discount.Discounter, error) {
 	disc, err := s.dal.GetDiscountByProductID(ctx, productID)
 	if err != nil {
 		return nil, err
 	}
 
 	return disc, nil
+}
+
+func (s *discountService) CheckIfProductIsOnDicount(ctx context.Context, productID int32) (bool, error) {
+	isOnDiscount, err := s.dal.CheckIfProductIsOnDicount(ctx, productID)
+	if err != nil {
+		return false, err
+	}
+
+	return isOnDiscount, nil
 }

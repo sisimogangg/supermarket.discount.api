@@ -2,8 +2,10 @@ package dataaccess
 
 import (
 	"context"
+
 	"github.com/sisimogangg/supermarket.discount.api/discount"
 	"github.com/sisimogangg/supermarket.discount.api/models"
+	"github.com/sisimogangg/supermarket.discount.api/utils"
 )
 
 type firebaserepo struct{}
@@ -37,13 +39,13 @@ var coconutProductDiscount = models.ProductDiscount{
 		PreReq   int32 `json:"prereq"`
 		Entitled int32 `json:"entitled"`
 	}{
-		PreReq: 2,
+		PreReq:   2,
 		Entitled: 1,
 	},
 	Discount: productD,
 }
 
-var discounts = [...]models.Discounter{
+var discounts = [...]discount.Discounter{
 	appleValueDiscount,
 	coconutProductDiscount,
 }
@@ -53,27 +55,45 @@ func NewFirebaseRepo() discount.DataAccessLayer {
 	return &firebaserepo{}
 }
 
-func (d *firebaserepo) GetDiscountByProductID(ctx context.Context, productID int32) (*models.Discounter, error) {
-	var discount models.Discounter
+func (d *firebaserepo) GetDiscountByProductID(ctx context.Context, productID int32) (*discount.Discounter, error) {
+	var discount discount.Discounter
 	for _, s := range discounts {
 		switch s.(type) {
 		case models.ProductDiscount:
 			pd := s.(models.ProductDiscount)
-			for _, r := range pd.ProductIDs {
-				if r == productID {
-					discount = s
-				}
+			if utils.Contains(productID, pd.ProductIDs) {
+				discount = s
 			}
 		case models.ValueDiscount:
 			vd := s.(models.ValueDiscount)
-			for _, id := range vd.ProductIDs {
-				if id == productID {
-					discount = s
-				}
+
+			if utils.Contains(productID, vd.ProductIDs) {
+				discount = s
 			}
 
 		}
 	}
 
 	return &discount, nil
+}
+
+func (d *firebaserepo) CheckIfProductIsOnDicount(ctx context.Context, productID int32) (bool, error) {
+	isOnDiscount := false
+	for _, s := range discounts {
+		switch s.(type) {
+		case models.ProductDiscount:
+			pd := s.(models.ProductDiscount)
+			if utils.Contains(productID, pd.ProductIDs) {
+				isOnDiscount = true
+			}
+		case models.ValueDiscount:
+			vd := s.(models.ValueDiscount)
+
+			if utils.Contains(productID, vd.ProductIDs) {
+				isOnDiscount = true
+			}
+
+		}
+	}
+	return isOnDiscount, nil
 }

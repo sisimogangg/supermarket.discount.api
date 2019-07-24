@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -22,13 +21,13 @@ func NewDiscountHandler(router *mux.Router, service discount.ServiceLayer) {
 	}
 
 	router.HandleFunc("/api/discount/{id}", handler.productDicount).Methods("GET")
+	router.HandleFunc("/api/discount/verify/{id}", handler.checkDiscount).Methods("GET")
 
 }
 
 func (h *discountHandler) productDicount(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	fmt.Println("we here 1")
 	productID, err := strconv.Atoi(params["id"])
 	if err != nil {
 		utils.Respond(w, utils.Message(false, err.Error()))
@@ -49,4 +48,30 @@ func (h *discountHandler) productDicount(w http.ResponseWriter, r *http.Request)
 	resp := utils.Message(true, "success")
 	resp["discount"] = disc
 	utils.Respond(w, resp)
+}
+
+func (h *discountHandler) checkDiscount(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	productID, err := strconv.Atoi(params["id"])
+	if err != nil {
+		utils.Respond(w, utils.Message(false, err.Error()))
+		return
+	}
+
+	ctx := r.Context()
+	if ctx != nil {
+		ctx = context.Background()
+	}
+
+	isOnDiscount, err := h.discountService.CheckIfProductIsOnDicount(ctx, int32(productID))
+	if err != nil {
+		utils.Respond(w, utils.Message(false, err.Error()))
+		return
+	}
+
+	resp := utils.Message(true, "success")
+	resp["isondiscount"] = isOnDiscount
+	utils.Respond(w, resp)
+
 }
