@@ -8,5 +8,5 @@ import (
 
 // DataAccessLayer defines behaviour of repository
 type DataAccessLayer interface {
-	GetDiscountByProductID(ctx context.Context, productID int32) (*models.Discount, error)
+	GetDiscountByProductID(ctx context.Context, productID int32) (*models.Discounter, error)
 }

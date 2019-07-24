@@ -18,7 +18,7 @@ func NewDicountService(repo discount.DataAccessLayer, timeout time.Duration) dis
 	return &discountService{dal: repo, timeOut: timeout}
 }
 
-func (s *discountService) GetDiscountByProductID(ctx context.Context, productID int32) (*models.Discount, error) {
+func (s *discountService) GetDiscountByProductID(ctx context.Context, productID int32) (*models.Discounter, error) {
 	disc, err := s.dal.GetDiscountByProductID(ctx, productID)
 	if err != nil {
 		return nil, err
