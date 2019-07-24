@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -20,13 +21,14 @@ func NewDiscountHandler(router *mux.Router, service discount.ServiceLayer) {
 		discountService: service,
 	}
 
-	router.HandleFunc("api/discount/{id}", handler.productDicount).Methods("GET")
-	//router.HandleFunc("/")
+	router.HandleFunc("/api/discount/{id}", handler.productDicount).Methods("GET")
 
 }
 
 func (h *discountHandler) productDicount(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
+
+	fmt.Println("we here 1")
 	productID, err := strconv.Atoi(params["id"])
 	if err != nil {
 		utils.Respond(w, utils.Message(false, err.Error()))

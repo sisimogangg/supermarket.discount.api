@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
@@ -28,7 +29,7 @@ func init() {
 func start(router *mux.Router) {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8090"
+		port = "8080"
 	}
 
 	err := http.ListenAndServe(":"+port, router)
@@ -42,12 +43,20 @@ func main() {
 
 	repo := data.NewFirebaseRepo()
 
-	//timeContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
+	timeContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
-	servicelayer := service.NewDicountService(repo)
+	servicelayer := service.NewDicountService(repo, timeContext)
 
 	handlers.NewDiscountHandler(router, servicelayer)
 
-	start(router)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	err := http.ListenAndServe(":"+port, router)
+	if err != nil {
+		fmt.Print(err)
+	}
 
 }
