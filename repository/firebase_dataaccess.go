@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
+	firebase "firebase.google.com/go"
 	pb "github.com/sisimogangg/supermarket.discount.api/proto"
 )
 
@@ -12,54 +14,48 @@ type Repository interface {
 	List(ctx context.Context) ([]*pb.ProductDiscount, error)
 }
 
-type firebaseRepo struct{}
-
-var discountValue = pb.DiscountValue{
-	Value:            0.50,
-	RequiredProducts: 3,
+type firebaseRepo struct {
+	fb *firebase.App
 }
 
-var discountRatio = pb.DiscountRatio{
-	PreRequisite: 2,
-	Entitled:     1,
-}
-
-var valueD = pb.ProductDiscount{
-	DiscountID:      "345",
-	Title:           "Buy3Get50%Off",
-	Summary:         "Buy 3 Get 50% Off the third one",
-	Type:            "Value",
-	DiscountValue:   &discountValue,
-	ProductIDs:      []string{"100", "200"},
-	Allocationlimit: -1,
-}
-
-var productD = pb.ProductDiscount{
-	DiscountID:      "346",
-	Title:           "Buy2Get1Free",
-	Summary:         "Buy 2 Get 1 Free",
-	Type:            "Product",
-	DiscountRatio:   &discountRatio,
-	ProductIDs:      []string{"100", "200"},
-	Allocationlimit: -1,
-}
-
-// NewFirebaseRepo creates and returns an instance
-func NewFirebaseRepo() Repository {
-	return &firebaseRepo{}
+// NewFirebaseRepo defines a constructor for firebaserepo
+func NewFirebaseRepo(app *firebase.App) Repository {
+	return &firebaseRepo{app}
 }
 
 func (f *firebaseRepo) Get(ctx context.Context, productID string) (*pb.ProductDiscount, error) {
-	var discount pb.ProductDiscount
-	discount = productD
+	client, err := f.fb.Database(ctx)
+	if err != nil {
+		return nil, err
+	}
+	discountRef := client.NewRef(fmt.Sprintf("discounts/%s", productID))
+
+	discount := pb.ProductDiscount{}
+	if err := discountRef.Get(ctx, &discount); err != nil {
+		return nil, err
+	}
+
 	return &discount, nil
 }
 
 func (f *firebaseRepo) List(ctx context.Context) ([]*pb.ProductDiscount, error) {
-	pDiscounts := make([]*pb.ProductDiscount, 0)
+	client, err := f.fb.Database(ctx)
+	if err != nil {
+		return nil, err
+	}
+	discountRef := client.NewRef("discounts")
 
-	pDiscounts = append(pDiscounts, &productD)
-	pDiscounts = append(pDiscounts, &valueD)
+	pDiscounts := make([]*pb.ProductDiscount, 0, 10)
+	var rawResult map[string]pb.ProductDiscount
+
+	err = discountRef.Get(ctx, &rawResult)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, d := range rawResult {
+		pDiscounts = append(pDiscounts, &d)
+	}
 
 	return pDiscounts, nil
 }

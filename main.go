@@ -83,7 +83,7 @@ func main() {
 		seeding(app)
 	}
 
-	repo := repository.NewFirebaseRepo()
+	repo := repository.NewFirebaseRepo(app)
 
 	timeContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
