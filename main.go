@@ -10,8 +10,10 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/spf13/viper"
 
-	data "github.com/sisimogangg/supermarket.discount.api/discount/dataaccess"
-	"github.com/sisimogangg/supermarket.discount.api/discount/service"
+	"github.com/sisimogangg/supermarket.discount.api/repository"
+	"github.com/sisimogangg/supermarket.discount.api/service"
+
+	pb "github.com/sisimogangg/supermarket.discount.api/proto"
 )
 
 func init() {
@@ -46,20 +48,16 @@ func main() {
 
 	srv.Init()
 
-	repo := data.NewFirebaseRepo()
+	repo := repository.NewFirebaseRepo()
 
 	timeContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
 	servicelayer := service.NewDicountService(repo, timeContext)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	pb.RegisterDiscountServiceHandler(srv.Server(), servicelayer)
 
-	err := http.ListenAndServe(":"+port, router)
-	if err != nil {
-		fmt.Print(err)
+	if err := srv.Run(); err != nil {
+		fmt.Println(err)
 	}
 
 }

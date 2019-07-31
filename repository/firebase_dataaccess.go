@@ -1,4 +1,4 @@
-package dataaccess
+package repository
 
 import (
 	"context"
@@ -12,7 +12,7 @@ type Repository interface {
 	List(ctx context.Context) ([]*pb.ProductDiscount, error)
 }
 
-type firebaserepo struct{}
+type firebaseRepo struct{}
 
 var discountValue = pb.DiscountValue{
 	Value:            0.50,
@@ -46,16 +46,20 @@ var productD = pb.ProductDiscount{
 
 // NewFirebaseRepo creates and returns an instance
 func NewFirebaseRepo() Repository {
-	return &firebaserepo{}
+	return &firebaseRepo{}
 }
 
-func (d *firebaserepo) Get(ctx context.Context, productID int32) (*pb.ProductDiscount, error) {
+func (f *firebaseRepo) Get(ctx context.Context, productID string) (*pb.ProductDiscount, error) {
 	var discount pb.ProductDiscount
-
+	discount = productD
 	return &discount, nil
 }
 
-func (d *firebaserepo) List(ctx context.Context) ([]*pb.ProductDiscount, error) {
+func (f *firebaseRepo) List(ctx context.Context) ([]*pb.ProductDiscount, error) {
 	pDiscounts := make([]*pb.ProductDiscount, 0)
+
+	pDiscounts = append(pDiscounts, &productD)
+	pDiscounts = append(pDiscounts, &valueD)
+
 	return pDiscounts, nil
 }
