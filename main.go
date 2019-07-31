@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/micro/go-micro"
 	"github.com/spf13/viper"
 
 	data "github.com/sisimogangg/supermarket.discount.api/discount/dataaccess"
 	"github.com/sisimogangg/supermarket.discount.api/discount/service"
-	"github.com/sisimogangg/supermarket.discount.api/handlers"
 )
 
 func init() {
@@ -39,15 +39,18 @@ func start(router *mux.Router) {
 }
 
 func main() {
-	router := mux.NewRouter()
+	srv := micro.NewService(
+		micro.Name("supermarket.discount"),
+		micro.Version("latest"),
+	)
+
+	srv.Init()
 
 	repo := data.NewFirebaseRepo()
 
 	timeContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
 	servicelayer := service.NewDicountService(repo, timeContext)
-
-	handlers.NewDiscountHandler(router, servicelayer)
 
 	port := os.Getenv("PORT")
 	if port == "" {
