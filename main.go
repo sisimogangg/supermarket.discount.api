@@ -1,17 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
-	"os"
+	"log"
 	"time"
 
-	"github.com/gorilla/mux"
+	firebase "firebase.google.com/go"
 	"github.com/micro/go-micro"
 	"github.com/spf13/viper"
+	"google.golang.org/api/option"
 
 	"github.com/sisimogangg/supermarket.discount.api/repository"
 	"github.com/sisimogangg/supermarket.discount.api/service"
+
+	"github.com/sisimogangg/supermarket.discount.api/utils"
 
 	pb "github.com/sisimogangg/supermarket.discount.api/proto"
 )
@@ -28,16 +31,42 @@ func init() {
 	}
 }
 
-func start(router *mux.Router) {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+func seeding(app *firebase.App) {
+	ctx := context.Background()
+	client, err := app.Database(ctx)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	err := http.ListenAndServe(":"+port, router)
+	var rawDiscounts map[string]pb.ProductDiscount
+	err = client.NewRef("discounts").Get(ctx, &rawDiscounts)
 	if err != nil {
-		fmt.Print(err)
+		log.Fatal(err)
 	}
+
+	if len(rawDiscounts) == 0 {
+		for _, d := range utils.ProductDiscounts {
+			if err := client.NewRef(fmt.Sprintf("discounts/%s", d.DiscountID)).Set(ctx, d); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+
+}
+
+func initializeFirebase() *firebase.App {
+	opt := option.WithCredentialsFile("firebaseServiceAccount.json")
+
+	ctx := context.Background()
+	config := &firebase.Config{
+		DatabaseURL: "https://supermarket-8aee3.firebaseio.com",
+	}
+
+	app, err := firebase.NewApp(ctx, config, opt)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return app
 }
 
 func main() {
@@ -47,6 +76,12 @@ func main() {
 	)
 
 	srv.Init()
+
+	app := initializeFirebase()
+
+	if viper.GetBool("debug") {
+		seeding(app)
+	}
 
 	repo := repository.NewFirebaseRepo()
 
