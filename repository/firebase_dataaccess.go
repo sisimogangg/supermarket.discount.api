@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	firebase "firebase.google.com/go"
 	pb "github.com/sisimogangg/supermarket.discount.api/proto"
@@ -24,18 +24,23 @@ func NewFirebaseRepo(app *firebase.App) Repository {
 }
 
 func (f *firebaseRepo) Get(ctx context.Context, productID string) (*pb.ProductDiscount, error) {
-	client, err := f.fb.Database(ctx)
+	var discount *pb.ProductDiscount
+
+	allDiscounts, err := f.List(ctx)
 	if err != nil {
 		return nil, err
 	}
-	discountRef := client.NewRef(fmt.Sprintf("discounts/%s", productID))
 
-	discount := pb.ProductDiscount{}
-	if err := discountRef.Get(ctx, &discount); err != nil {
-		return nil, err
+	for _, d := range allDiscounts {
+		for i := 0; i < len(d.ProductIDs); i++ {
+			if strings.Contains(d.ProductIDs[i], productID) {
+				discount = d
+				break
+			}
+		}
 	}
 
-	return &discount, nil
+	return discount, nil
 }
 
 func (f *firebaseRepo) List(ctx context.Context) ([]*pb.ProductDiscount, error) {
