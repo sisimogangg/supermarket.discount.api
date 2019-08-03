@@ -9,6 +9,7 @@ import (
 )
 
 // Repository represents repo functionality
+// Any repo should satisfy this
 type Repository interface {
 	Get(ctx context.Context, productID string) (*pb.ProductDiscount, error)
 	List(ctx context.Context) ([]*pb.ProductDiscount, error)
