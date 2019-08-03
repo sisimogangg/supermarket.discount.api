@@ -26,7 +26,7 @@ func NewFirebaseRepo(app *firebase.App) Repository {
 func (f *firebaseRepo) Get(ctx context.Context, productID string) (*pb.ProductDiscount, error) {
 	var discount *pb.ProductDiscount
 
-	allDiscounts, err := f.List(ctx)
+	allDiscounts, err := f.List(ctx) // Temporary Implementation. A better way would be to write a DB Query
 	if err != nil {
 		return nil, err
 	}
