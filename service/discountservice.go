@@ -24,14 +24,16 @@ func (s *discountService) Get(ctx context.Context, req *pb.GetRequest, res *pb.P
 		return err
 	}
 
-	res.DiscountID = discount.DiscountID
-	res.Title = discount.Title
-	res.Summary = discount.Summary
-	res.Type = discount.Type
-	res.Allocationlimit = discount.Allocationlimit
-	res.DiscountRatio = discount.DiscountRatio
-	res.DiscountValue = discount.DiscountValue
-	res.ProductIDs = discount.ProductIDs
+	if discount != nil {
+		res.DiscountID = discount.DiscountID
+		res.Title = discount.Title
+		res.Summary = discount.Summary
+		res.Type = discount.Type
+		res.Allocationlimit = discount.Allocationlimit
+		res.DiscountRatio = discount.DiscountRatio
+		res.DiscountValue = discount.DiscountValue
+		res.ProductIDs = discount.ProductIDs
+	}
 
 	return nil
 }
