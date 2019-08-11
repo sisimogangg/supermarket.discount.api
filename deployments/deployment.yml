@@ -1,0 +1,22 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: discount
+  labels:
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discount
+  template:
+    metadata:
+      labels:
+        app: discount
+        version: v1
+    spec:
+        containers:
+        - name: discount-service
+          image: sisimogangg/supermarket_discount-api:v1.0
+          ports:
+          - containerPort: 8080
