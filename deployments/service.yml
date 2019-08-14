@@ -5,8 +5,8 @@ metadata:
   labels:
     app: discount
 spec:
+  selector:
+    app: discount
   ports:
   - port: 8080
     protocol: TCP
-  selector:
-    app: discount
