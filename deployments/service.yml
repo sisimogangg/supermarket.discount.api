@@ -8,5 +8,6 @@ spec:
   selector:
     app: discount
   ports:
-  - port: 8080
+  - port: 50052
     protocol: TCP
+    
