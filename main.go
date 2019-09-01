@@ -55,7 +55,13 @@ func seeding(app *firebase.App) {
 }
 
 func initializeFirebase() *firebase.App {
-	opt := option.WithCredentialsFile("firebaseServiceAccount.json")
+	var opt option.ClientOption
+
+	if viper.GetBool("debug") {
+		opt = option.WithCredentialsFile("firebaseServiceAccount.json")
+	} else {
+		opt = option.WithCredentialsFile("/opt/firebase/firebaseServiceAccount.json")
+	}
 
 	ctx := context.Background()
 	config := &firebase.Config{

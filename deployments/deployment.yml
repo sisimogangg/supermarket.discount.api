@@ -20,3 +20,11 @@ spec:
           image: sisimogangg/supermarket_discount-api:v1.0
           ports:
           - containerPort: 50052
+          volumeMounts:
+          - name: secret-volume
+            mountPath: "/opt/firebase"
+            readOnly: true
+        volumes:
+        - name: secret-volume # name to match for mounting
+          secret:
+            secretName: firebase-secret # name of secret
